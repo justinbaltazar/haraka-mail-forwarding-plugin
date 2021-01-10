@@ -1,0 +1,27 @@
+{
+  "name": "haraka_local",
+  "description": "An SMTP Server",
+  "version": "0.0.1",
+  "dependencies": {
+    "Haraka": "^2.8.26",
+    "address-rfc2821": "^1.1.4",
+    "dotenv": "^8.2.0",
+    "haraka-constants": "^1.0.5",
+    "haraka-test-fixtures": "^1.0.33",
+    "haraka-utils": "^1.0.2",
+    "install": "^0.13.0",
+    "jest": "^26.6.3",
+    "mocha": "^8.2.1",
+    "mongodb": "^3.6.3",
+    "nodeunit": "^0.11.3",
+    "nyc": "^15.1.0",
+    "path": "^0.12.7",
+    "sinon": "^9.2.2",
+    "srs.js": "^0.1.0"
+  },
+  "repository": "",
+  "license": "MIT",
+  "scripts": {
+    "test": "npx nyc mocha tests"
+  }
+}
