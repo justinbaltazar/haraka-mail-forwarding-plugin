@@ -31,13 +31,13 @@ Haraka can be run by running `haraka -c /path/to/this/repository`
 **Configuration**
 
 Haraka's documentation provides a [very thorough coverage of configuration options](http://haraka.github.io/core/CoreConfig/). 
-I recommend properly configuring [DKIM](https://github.com/haraka/Haraka/blob/master/docs/plugins/dkim_sign.md) and SPF on the domain that will be forwarding emails to avoid emails from landing in spam. 
+I recommend properly configuring [DKIM](https://github.com/haraka/Haraka/blob/master/docs/plugins/dkim_sign.md) SPF, and DMARC on the domain that will be forwarding emails to avoid emails from landing in spam. 
 I also recommend setting up the `tls` plugin. I have included some of these configuration files in this repository. 
 
 **Please do not forget to change the `secret` and `sender_domain` values in `config/srs.ini`**. 
 
 An `.env` file should be kept in your main Haraka folder with the following keys: `MONGO_URI` and `MONGO_DB_NAME`. 
-If these two values are not set on either the .env file or in the environment that this Haraka is being running, this plugin will throw an error.
+If these two values are not set on either the .env file or in the environment that this instance of Haraka is running, this plugin will throw an error.
 
 ### Tests
 To run tests, run `yarn test`. These tests were written using the `Sinon` and `assert` libraries and can be found in the `tests` directory.
