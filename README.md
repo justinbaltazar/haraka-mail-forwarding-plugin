@@ -10,7 +10,7 @@ This version adds MongoDB as a datastore.
 
 This allows us to do two important things:
 - update aliases and forwarding rules on the fly
-- store `Message-ID` headers and allow anonymous masking of email replies as well
+- store `Message-ID` headers and allow anonymous masking of email replies
 
 ### Set Up
 
