@@ -55,6 +55,7 @@ exports.init_mongo_db = function(next, server) {
                 plugin.logerror(err);
                 throw err;
             }
+            
             server.notes.mongodb = client.db().collection('aliases');
             plugin.db = server.notes.mongodb;
             next();

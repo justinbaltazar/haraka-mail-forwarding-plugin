@@ -22,6 +22,9 @@ function _set_up (done) {
   this.plugin = new fixtures.plugin('masked');
 
   this.plugin.loginfo = sinon.spy() // suppress logs
+
+  this.plugin.db = sinon.spy() // mock MongoDB
+
   done();
 }
 
@@ -158,18 +161,103 @@ describe('forward_message', function() {
   });
 })
 
+describe('init_mongo_db', function(done) {
+  beforeEach(_set_up)
+
+  let mongoCallback;
+  let testDBMock;
+
+  class ClientMock {
+    constructor() {
+      this.spy = new CollectionMock();
+    }
+
+    db() {
+      return this.spy;
+    }
+  }
+
+  class CollectionMock {
+    constructor() {
+      this.spy = sinon.spy();
+    }
+
+    collection(...args) {
+      assert.deepEqual(args, ['aliases'])
+      return noop;
+    }
+  }
+
+  beforeEach(function (done) {
+    mongoCallback = (url, config, callback) => {
+      assert.equal(url, 'test_uri')
+      assert.deepEqual(config, {
+        useNewUrlParser: true,
+        keepAlive: true,
+        connectTimeoutMS: 0,
+        socketTimeoutMS: 0
+      })
+
+      testDBMock = new ClientMock();
+
+      callback(null, testDBMock);
+    }
+
+    sinon.stub(MongoClient, "connect").callsFake(mongoCallback)
+    done()
+  })
+
+  afterEach(function () {
+      MongoClient.connect.restore(); // Unwraps the spy
+  });
+
+  it('should call the MongoDB connection method and next', function(done) {
+    const next = (status) => {
+      assert.equal(status, undefined)
+    }
+
+    let server = {
+      notes: {}
+    }
+
+    this.plugin.init_mongo_db(next, server)
+
+    assert.ok(this.plugin.db)
+    assert.ok(server.notes.mongodb)
+
+    done()
+  })
+})
+
 describe('fetch_alias_from_db', function(done) {
   beforeEach(_set_up)
 
-  it('should call the MongoDB connection method', function(done) {
+  let mongoCallback;
+
+  class MongoMock {
+    constructor() {
+      this.spy = sinon.spy();
+    }
+
+    findOne(query, callback) {
+      this.spy();
+      callback(null, []);
+    }
+  }
+
+  beforeEach(function (done) {
+    mongoCallback = sinon.spy();
+    done()
+  })
+
+  it('should call the plugin DB method and also the callback', function(done) {
     const rcptMock = new Address('<test@test.com>')
-    const callback = sinon.spy()
-    sinon.stub(MongoClient, "connect").callsFake(callback)
 
-    this.plugin.fetch_alias_from_db(rcptMock, callback)
+    this.plugin.db = new MongoMock();
+    this.plugin.fetch_alias_from_db(rcptMock, mongoCallback)
 
-    assert(MongoClient.connect.calledOnce)
-    assert(callback.calledOnce)
+    assert(this.plugin.db.spy.calledOnce)
+    assert(mongoCallback.calledOnce)
 
     done()
   })
@@ -190,6 +278,16 @@ describe('fetch_references', function() {
 describe('two_way_relay', function(done) {
   beforeEach(_set_up)
 
+  class MongoMock {
+    constructor() {
+      this.spy = sinon.spy();
+    }
+
+    insertOne(query) {
+      this.spy(query);
+    }
+  }
+
   beforeEach(function(done) {
     this.connection = fixtures.connection.createConnection({}, { 
       notes: {},
@@ -203,22 +301,23 @@ describe('two_way_relay', function(done) {
       rcpt_user: 'to'
     }
 
+    this.plugin.db = new MongoMock()
+
     done()
   })
 
   it('should do nothing but print logger statements', function(done) {
     this.connection.transaction.notes.mail_to = null
-    this.plugin.two_way_relay(this.connection.transaction, sinon.spy(), null, null)
+    this.plugin.two_way_relay(this.connection.transaction, null, null)
     assert.equal(this.plugin.loginfo.callCount, 3)
     done()
   })
 
   it('should add the entry into the database', function(done) {
-    const connectionSpy = { insertOne: sinon.spy() }
-    this.plugin.two_way_relay(this.connection.transaction, connectionSpy, null, '123')
+    this.plugin.two_way_relay(this.connection.transaction, null, '123')
 
     assert.equal(this.plugin.loginfo.callCount, 2)
-    assert.deepEqual(connectionSpy.insertOne.firstCall.args, [{
+    assert.deepEqual(this.plugin.db.spy.firstCall.args, [{
         id: '123',
         origin: 'from@test.com', 
         dest: 'to@test.com',
@@ -237,7 +336,7 @@ describe('two_way_relay', function(done) {
           alias: 'alias@domain.me'
         }
         this.connection.transaction.add_header('from', 'john doe <from@test.com>')
-        this.plugin.two_way_relay(this.connection.transaction, null, mockMessageThread, '123')
+        this.plugin.two_way_relay(this.connection.transaction, mockMessageThread, '123')
         assert.equal(this.connection.transaction.header.get('Reply-To'), 'john doe <to@reply.test.com>')
         assert.equal(this.plugin.loginfo.callCount, 4)
         done()
@@ -251,7 +350,7 @@ describe('two_way_relay', function(done) {
         }
 
         this.connection.transaction.add_header('from', 'alias to mask <masked_alias@test.me>')
-        this.plugin.two_way_relay(this.connection.transaction, null, mockMessageThread, '123')
+        this.plugin.two_way_relay(this.connection.transaction, mockMessageThread, '123')
         assert.equal(this.connection.transaction.header.get('Reply-To'), 'alias to mask <alias@domain.me>')
         assert.equal(this.plugin.loginfo.callCount, 4)
         done()
