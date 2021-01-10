@@ -17,7 +17,7 @@ This allows us to do two important things:
 **Prequisites**
 
 - Node >= `10.21.0`
-- Haraka (latest version) run `npm install -g Haraka` to install
+- Haraka (latest version) run `npm install -g Haraka` to install. [More detailed installation instructions can be found on Haraka's main repository](https://github.com/haraka/haraka).
 
 **Installation**
 
