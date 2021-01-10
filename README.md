@@ -14,6 +14,8 @@ This allows us to do two important things:
 - update aliases and forwarding rules on the fly
 - store `Message-ID` and `Reference` headers to allow the masking of email replies
 
+See `plugins/masked.js`.
+
 ### Set Up
 
 **Prequisites**
