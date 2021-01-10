@@ -33,9 +33,41 @@ exports.register = function () {
     plugin.load_srs_ini();
     plugin.srs = new plugin.SRS({secret: plugin.cfg.main.secret});
 
+    this.register_hook('init_master', 'init_mongo_db');
+    this.register_hook('init_child', 'init_mongo_db');
+
     this.register_hook('rcpt', 'alias_forward'); // hook configures and compiles information
     this.register_hook('data_post', 'route_relay'); // forwards the email
 };
+
+exports.init_mongo_db = function(next, server) {
+    const plugin = this;
+
+    if(!server.notes.mongodb) {
+        MongoClient.connect(url, { 
+            'useNewUrlParser': true, 
+            'keepAlive': true, 
+            'connectTimeoutMS': 0, 
+            'socketTimeoutMS': 0 
+        }, 
+        (err, client) => {
+            if (err) {
+                plugin.logerror(err);
+                throw err;
+            }
+            server.notes.mongodb = client.db().collection('aliases');
+            plugin.db = server.notes.mongodb;
+            next();
+        });
+    } else {
+        plugin.db = server.notes.mongodb;
+        next();
+    }
+}
+
+exports.shutdown = function() {
+    server.notes.mongodb.close();
+}
 
 exports.load_srs_ini = function () {
   const plugin = this;
@@ -118,25 +150,20 @@ exports.process_message_id = function(tx, callback) {
     const references = tx.header.get('References');
     const message_id = (references ? this.fetch_references(references)[0] : this.fetch_references(tx.header.get('Message-ID'))[0]).trim();
 
-    MongoClient.connect(url, (err, client) => {
-        const database = client.db();
-        const collection = database.collection('messages');
         
-        collection.findOne({
-            id: message_id
-        }, (_err, results) => {
-            if(err) {
-                plugin.loginfo('Error:', err);
-            } else {
-                this.two_way_relay(tx, collection, results, message_id)
-            }
-            client.close();
-            return callback();
-        });
+    plugin.db.findOne({
+        id: message_id
+    }, (err, results) => {
+        if(err) {
+            plugin.loginfo('Error:', err);
+        } else {
+            this.two_way_relay(tx, results, message_id)
+        }
+        return callback();
     });
 }
 
-exports.two_way_relay = function(tx, collection, results, message_id) {
+exports.two_way_relay = function(tx, results, message_id) {
     const { mail_from, mail_to, alias_full, rcpt_host, rcpt_user } = tx.notes;
     const plugin = this;
     const from_header = tx.header.get('from');
@@ -153,7 +180,7 @@ exports.two_way_relay = function(tx, collection, results, message_id) {
         plugin.loginfo('Not found in our database with message_id:', message_id);
         plugin.loginfo('alias_full:', alias_full)
 
-        collection.insertOne({
+        plugin.db.insertOne({
             id: message_id,
             origin: mail_from, 
             dest: mail_to[0], // assume we're just picking one for now (future support coming soon!),
@@ -199,22 +226,17 @@ exports.fetch_alias_from_db = function(rcpt, callback) {
     const { user, host } = rcpt;
     const plugin = this;
 
-    MongoClient.connect(url, (err, client) => {
-        const database = client.db();
-        const collection = database.collection('aliases');
-        
-        collection.findOne({
-            user,
-            host,
-            active: true,
-        }, (err, results) => {
+    plugin.db.findOne({
+        user,
+        host,
+        active: true,
+    }, (err, results) => {
 
-            if(err) {
-                plugin.loginfo('Error:', err);
-            } 
-            
-            return callback(results);
-        });
+        if(err) {
+            plugin.loginfo('Error:', err);
+        } 
+        
+        return callback(results);
     });
 }
 
