@@ -22,7 +22,11 @@ This allows us to do two important things:
 **Installation**
 
 Run `yarn` in the main directory to install necessary packages.
+Haraka can be run by running `haraka -c /path/to/this/repository`
 
 **Configuration**
 
-Haraka's documentation provides a [very thorough walk through of possile configurations](http://haraka.github.io/core/CoreConfig/). I recommend properly configuring DKIM and SPF on the email domain to avoid forwarded emails from heading into spam. I also recommend setting up the `tls` plugin. I have included those configuration files in this repository. Do change the `secret` and `sender_domain` values in `config/srs.ini`, though.
+Haraka's documentation provides a [very thorough coverage of configuration options](http://haraka.github.io/core/CoreConfig/). I recommend properly configuring DKIM and SPF on the email domain to avoid forwarded emails from heading into spam. I also recommend setting up the `tls` plugin. I have included some of these configuration files in this repository. **Do change the `secret` and `sender_domain` values in `config/srs.ini`**. 
+
+An `.env` file should be kept in your main Haraka folder with the following keys: `MONGO_URI` and `MONGO_DB_NAME`. 
+If these two values are not set on either the .env file or in the environment that this Haraka is being running, this plugin will throw an error.
