@@ -2,6 +2,8 @@
 
 ### About
 
+This is a plugin which should be run and configured with the [Haraka SMTP server](http://haraka.github.io/).
+
 Based off of the original [haraka-alias-forward by chadsmith on Github](https://github.com/chadsmith/haraka-alias-forward).
 Work on this version began from a fork of [X-Ryl669's modifications](https://github.com/X-Ryl669/haraka-alias-forward) to the original source.
 X-Ryl669's modifications implements [SRS rewrites](https://en.wikipedia.org/wiki/Sender_Rewriting_Scheme) which leads to a noticable improvement in email delivery. 
