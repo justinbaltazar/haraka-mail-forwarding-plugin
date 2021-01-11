@@ -261,9 +261,6 @@ exports.forward_message = function(originalTransaction, recipients) {
     const afterSrsRewriteFrom = new Address(plugin.srs.rewrite(sender.user, sender.host), plugin.cfg.main.sender_domain);
 
     send_transaction.mail_from = afterSrsRewriteFrom;
-
-    // logger.loginfo(plugin, 'beforeSrsRewriteFrom=' + beforeSrsRewriteFrom + ', afterSrsRewriteFrom=' + afterSrsRewriteFrom + '.');
-
     originalTransaction.rcpt_to = send_transaction.rcpt_to;
     originalTransaction.mail_from = send_transaction.mail_from;
 };
