@@ -1,4 +1,5 @@
 # Masked SMTP Server
+![Build status](https://travis-ci.com/justinbaltazar/masked-smtp.svg?token=xyyQ9twZoX6YkzF4EiaC&branch=master)
 
 ### About
 
