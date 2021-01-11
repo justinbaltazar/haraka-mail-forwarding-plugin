@@ -19,7 +19,7 @@ function _set_up (done) {
   process.env.MONGO_URI = 'test_uri'
   process.env.MONGO_DB_NAME = 'test_db'
 
-  this.plugin = new fixtures.plugin('masked');
+  this.plugin = new fixtures.plugin('mail_forwarding');
 
   this.plugin.loginfo = sinon.spy() // suppress logs
 
@@ -30,7 +30,7 @@ function _set_up (done) {
 
 describe('dotenv', function() {
    it('should throw an error without proper environment variables set', function(done) {
-      assert.throws(() => { new fixtures.plugin('masked') }, new Error('ENV not properly configured. Exiting...'));
+      assert.throws(() => { new fixtures.plugin('mail_forwarding') }, new Error('ENV not properly configured. Exiting...'));
       done()
    })
 })
