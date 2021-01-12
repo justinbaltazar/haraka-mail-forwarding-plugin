@@ -1,5 +1,5 @@
 # Haraka Mail Forwarding Plugin
-![Build status](https://api.travis-ci.com/justinbaltazar/haraka-mail-forwarding-plugin.svg?token=xyyQ9twZoX6YkzF4EiaC&branch=master&status=passed)
+![Build status](https://api.travis-ci.com/justinbaltazar/haraka-mail-forwarding-plugin.svg?token=xyyQ9twZoX6YkzF4EiaC&branch=master)
 
 ### About
 
